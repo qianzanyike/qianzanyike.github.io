@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>千赞艺科 QIANZAN — AI 文旅创意解决专家</title>
+<meta name="description" content="千赞艺科——以 AI 輕量化运营策略、数据资产全链方案与 AIGC 创意设计为核心，为文旅项目提供从品牌、空间到运营的一体化解决方案。" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+  :root{
+    --bg:#0b0c10;
+    --bg-2:#111319;
+    --bg-3:#161922;
+    --line:rgba(212,175,95,.16);
+    --line-2:rgba(255,255,255,.08);
+    --gold:#d4af5f;
+    --gold-2:#e8c987;
+    --gold-soft:rgba(212,175,95,.12);
+    --ink:#efe9dd;
+    --ink-2:#b9b1a3;
+    --ink-3:#7d7669;
+    --radius:18px;
+    --max:1200px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    font-family:"Noto Sans SC",system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  img{display:block;max-width:100%}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--max);margin:0 auto;padding:0 28px}
+  .serif{font-family:"Noto Serif SC","Cormorant Garamond",serif}
+  .en{font-family:"Cormorant Garamond",serif;letter-spacing:.04em}
+  .section{padding:104px 0;position:relative}
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:10px;
+    font-size:13px;letter-spacing:.18em;color:var(--gold);
+    text-transform:uppercase;font-weight:500;
+  }
+  .eyebrow::before{content:"";width:34px;height:1px;background:var(--gold);display:inline-block}
+  .h2{font-size:clamp(30px,4.4vw,52px);font-weight:700;line-height:1.25;margin:18px 0 16px}
+  .h2 .accent{color:var(--gold-2)}
+  .lead{color:var(--ink-2);font-size:17px;max-width:680px}
+  .section-head{max-width:760px;margin-bottom:56px}
+  .section-head.center{margin-left:auto;margin-right:auto;text-align:center}
+  .section-head.center .eyebrow::before{display:none}
+  .section-head.center .eyebrow{justify-content:center}
+
+  /* ===== Header ===== */
+  header{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    transition:background .4s ease,box-shadow .4s ease,backdrop-filter .4s ease;
+    background:transparent;
+  }
+  header.on{
+    background:rgba(11,12,16,.78);
+    backdrop-filter:saturate(140%) blur(14px);
+    -webkit-backdrop-filter:saturate(140%) blur(14px);
+    box-shadow:0 1px 0 var(--line);
+  }
+  .nav{display:flex;align-items:center;justify-content:space-between;height:74px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand .logo{
+    width:38px;height:38px;border-radius:10px;
+    background:linear-gradient(135deg,var(--gold-2),var(--gold) 60%,#9c7a3a);
+    display:flex;align-items:center;justify-content:center;
+    font-family:"Noto Serif SC";font-weight:900;color:#1a1408;font-size:20px;
+    box-shadow:0 4px 18px rgba(212,175,95,.3);
+  }
+  .brand .name{font-family:"Noto Serif SC";font-weight:700;font-size:20px;letter-spacing:.04em}
+  .brand .name small{display:block;font-size:10px;letter-spacing:.32em;color:var(--ink-3);font-weight:400;font-family:"Cormorant Garamond"}
+  .menu{display:flex;gap:34px;align-items:center}
+  .menu a{font-size:14px;color:var(--ink-2);transition:color .25s;position:relative}
+  .menu a:hover{color:var(--gold-2)}
+  .menu a::after{content:"";position:absolute;left:0;bottom:-6px;width:0;height:1px;background:var(--gold);transition:width .3s}
+  .menu a:hover::after{width:100%}
+  .btn{
+    display:inline-flex;align-items:center;gap:10px;
+    padding:13px 26px;border-radius:999px;font-size:14px;font-weight:500;
+    border:1px solid var(--gold);color:var(--gold-2);
+    background:var(--gold-soft);transition:all .3s;cursor:pointer;
+  }
+  .btn:hover{background:var(--gold);color:#1a1408;transform:translateY(-2px);box-shadow:0 10px 30px rgba(212,175,95,.25)}
+  .btn.solid{background:linear-gradient(135deg,var(--gold-2),var(--gold));color:#1a1408;border-color:transparent}
+  .btn.solid:hover{filter:brightness(1.08)}
+  .burger{display:none;flex-direction:column;gap:5px;cursor:pointer;background:none;border:0;padding:8px}
+  .burger span{width:22px;height:2px;background:var(--ink);transition:.3s}
+
+  /* ===== Hero ===== */
+  .hero{
+    position:relative;min-height:100vh;display:flex;align-items:center;
+    padding:120px 0 70px;overflow:hidden;
+  }
+  .hero-bg{position:absolute;inset:0;z-index:0}
+  .hero-bg img{width:100%;height:100%;object-fit:cover;opacity:.38}
+  .hero-bg::after{
+    content:"";position:absolute;inset:0;
+    background:
+      radial-gradient(120% 80% at 80% 20%,rgba(212,175,95,.18),transparent 55%),
+      linear-gradient(180deg,rgba(11,12,16,.55) 0%,rgba(11,12,16,.82) 60%,var(--bg) 100%);
+  }
+  .hero-grid{position:absolute;inset:0;z-index:1;opacity:.4;
+    background-image:linear-gradient(var(--line-2) 1px,transparent 1px),linear-gradient(90deg,var(--line-2) 1px,transparent 1px);
+    background-size:64px 64px;
+    -webkit-mask-image:radial-gradient(circle at 70% 30%,#000,transparent 70%);
+    mask-image:radial-gradient(circle at 70% 30%,#000,transparent 70%);
+  }
+  .hero-inner{position:relative;z-index:2;max-width:880px}
+  .hero .kicker{font-size:14px;letter-spacing:.3em;color:var(--gold);font-weight:500;margin-bottom:26px}
+  .hero h1{
+    font-family:"Noto Serif SC";font-weight:900;
+    font-size:clamp(40px,7.2vw,86px);line-height:1.08;letter-spacing:.01em;
+    margin-bottom:8px;
+  }
+  .hero h1 .gold{
+    background:linear-gradient(120deg,#f3dca6,#d4af5f 55%,#a8823a);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero .en-title{font-size:clamp(16px,2vw,22px);color:var(--ink-3);letter-spacing:.16em;margin-bottom:30px}
+  .hero p.lead{font-size:clamp(16px,1.8vw,19px);max-width:620px;margin-bottom:38px}
+  .hero-cta{display:flex;gap:16px;flex-wrap:wrap}
+  .hero-tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:42px}
+  .hero-tags span{
+    font-size:12.5px;color:var(--ink-2);padding:7px 16px;border:1px solid var(--line);
+    border-radius:999px;background:rgba(255,255,255,.02);
+  }
+  .scroll-hint{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:2;
+    display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ink-3);font-size:11px;letter-spacing:.2em}
+  .scroll-hint .bar{width:1px;height:46px;background:linear-gradient(var(--gold),transparent);animation:slide 2s infinite}
+  @keyframes slide{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}51%{transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+  /* ===== About ===== */
+  .about{background:linear-gradient(180deg,var(--bg) 0%,var(--bg-2) 100%)}
+  .about-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:64px;align-items:center}
+  .about-img{position:relative;border-radius:var(--radius);overflow:hidden;aspect-ratio:4/3.4;
+    box-shadow:0 30px 80px rgba(0,0,0,.5)}
+  .about-img img{width:100%;height:100%;object-fit:cover}
+  .about-img .frame{position:absolute;inset:14px;border:1px solid rgba(255,255,255,.25);border-radius:10px;pointer-events:none}
+  .about-stat{position:absolute;bottom:-22px;right:-18px;background:var(--bg-3);
+    border:1px solid var(--line);border-radius:14px;padding:18px 22px;box-shadow:0 18px 40px rgba(0,0,0,.45)}
+  .about-stat .num{font-family:"Cormorant Garamond";font-size:34px;font-weight:600;color:var(--gold-2);line-height:1}
+  .about-stat .lbl{font-size:12px;color:var(--ink-3);letter-spacing:.12em;margin-top:4px}
+  .about h2{font-size:clamp(28px,4vw,46px);font-weight:700;line-height:1.3;margin:18px 0 20px}
+  .about .en-sub{color:var(--gold);font-size:13px;letter-spacing:.2em;margin-bottom:18px}
+  .about p{color:var(--ink-2);margin-bottom:26px}
+  .about .chips{display:flex;flex-wrap:wrap;gap:10px}
+  .about .chips span{font-size:13px;padding:8px 16px;border:1px solid var(--line-2);border-radius:999px;color:var(--ink-2)}
+
+  /* ===== Capability (三大能力) ===== */
+  .cap{background:var(--bg-2)}
+  .cap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+  .cap-card{
+    position:relative;padding:38px 30px 34px;border-radius:var(--radius);
+    background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01));
+    border:1px solid var(--line-2);overflow:hidden;transition:transform .4s,border-color .4s;
+  }
+  .cap-card::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;transition:opacity .4s}
+  .cap-card:hover{transform:translateY(-8px);border-color:var(--line)}
+  .cap-card:hover::before{opacity:1}
+  .cap-num{font-family:"Cormorant Garamond";font-size:46px;font-weight:500;color:var(--gold);opacity:.4;line-height:1}
+  .cap-card h3{font-family:"Noto Serif SC";font-size:23px;margin:18px 0 6px;font-weight:700}
+  .cap-card .en{font-size:12px;color:var(--ink-3);letter-spacing:.14em;display:block;margin-bottom:16px}
+  .cap-card p{color:var(--ink-2);font-size:14.5px}
+  .cap-loop{
+    margin-top:30px;text-align:center;padding:26px;
+    border:1px dashed var(--line);border-radius:var(--radius);
+    background:linear-gradient(180deg,var(--gold-soft),transparent);
+  }
+  .cap-loop .t{font-family:"Noto Serif SC";font-size:22px;color:var(--gold-2);font-weight:700}
+  .cap-loop .s{color:var(--ink-2);font-size:14px;margin-top:6px}
+
+  /* ===== Business (核心业务) ===== */
+  .biz-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+  .biz-card{
+    border-radius:var(--radius);overflow:hidden;position:relative;
+    background:var(--bg-3);border:1px solid var(--line-2);
+    transition:transform .4s,box-shadow .4s,border-color .4s;
+  }
+  .biz-card:hover{transform:translateY(-6px);box-shadow:0 26px 60px rgba(0,0,0,.5);border-color:var(--line)}
+  .biz-card .ph{aspect-ratio:16/10;overflow:hidden;position:relative}
+  .biz-card .ph img{width:100%;height:100%;object-fit:cover;transition:transform .8s}
+  .biz-card:hover .ph img{transform:scale(1.07)}
+  .biz-card .tag{position:absolute;top:14px;left:14px;font-size:11px;letter-spacing:.12em;
+    padding:5px 12px;border-radius:999px;background:rgba(11,12,16,.72);color:var(--gold-2);border:1px solid var(--line);backdrop-filter:blur(6px)}
+  .biz-card .body{padding:22px 24px 26px}
+  .biz-card h3{font-family:"Noto Serif SC";font-size:20px;font-weight:700;margin-bottom:4px}
+  .biz-card .en{font-size:12px;color:var(--ink-3);letter-spacing:.12em;display:block;margin-bottom:12px}
+  .biz-card p{color:var(--ink-2);font-size:14px}
+
+  /* ===== Cases (案例) ===== */
+  .cases{background:linear-gradient(180deg,var(--bg) 0%,var(--bg-2) 100%)}
+  .case-grid{display:grid;grid-template-columns:1.3fr 1fr;gap:24px}
+  .case-card{border-radius:var(--radius);overflow:hidden;position:relative;
+    border:1px solid var(--line-2);background:var(--bg-3);min-height:340px;
+    display:flex;align-items:flex-end;transition:transform .4s,border-color .4s}
+  .case-card:hover{transform:translateY(-6px);border-color:var(--line)}
+  .case-card.big{grid-row:span 2}
+  .case-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .8s}
+  .case-card:hover img{transform:scale(1.06)}
+  .case-card .veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,12,16,.1) 0%,rgba(11,12,16,.35) 45%,rgba(11,12,16,.92) 100%)}
+  .case-card .body{position:relative;z-index:2;padding:28px}
+  .case-card .tag{font-size:11px;letter-spacing:.14em;color:var(--gold-2);margin-bottom:8px}
+  .case-card h3{font-family:"Noto Serif SC";font-size:22px;font-weight:700;margin-bottom:8px}
+  .case-card.big h3{font-size:26px}
+  .case-card p{color:var(--ink-2);font-size:14px;max-width:540px}
+
+  /* ===== News ===== */
+  .news-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px}
+  .news-card{display:grid;grid-template-columns:200px 1fr;gap:22px;
+    border:1px solid var(--line-2);border-radius:var(--radius);overflow:hidden;
+    background:var(--bg-3);transition:transform .4s,border-color .4s}
+  .news-card:hover{transform:translateY(-6px);border-color:var(--line)}
+  .news-card .ph{overflow:hidden}
+  .news-card .ph img{width:100%;height:100%;object-fit:cover;min-height:100%}
+  .news-card .body{padding:22px 24px 22px 0;display:flex;flex-direction:column}
+  .news-card .date{font-family:"Cormorant Garamond";font-size:13px;color:var(--gold);letter-spacing:.1em;margin-bottom:10px}
+  .news-card h3{font-family:"Noto Serif SC";font-size:18px;font-weight:700;line-height:1.5;margin-bottom:10px}
+  .news-card .more{margin-top:auto;color:var(--gold-2);font-size:13px;display:inline-flex;align-items:center;gap:6px}
+  .news-card .more::after{content:"→";transition:transform .3s}
+  .news-card:hover .more::after{transform:translateX(4px)}
+
+  /* ===== Audience (服务对象) ===== */
+  .aud{background:var(--bg-2)}
+  .aud-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  .aud-card{border-radius:var(--radius);overflow:hidden;position:relative;
+    border:1px solid var(--line-2);background:var(--bg-3);min-height:300px;
+    display:flex;align-items:flex-end;transition:transform .4s,border-color .4s}
+  .aud-card:hover{transform:translateY(-6px);border-color:var(--line)}
+  .aud-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .8s}
+  .aud-card:hover img{transform:scale(1.07)}
+  .aud-card .veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,12,16,.05),rgba(11,12,16,.9))}
+  .aud-card .body{position:relative;z-index:2;padding:22px}
+  .aud-card .num{font-family:"Cormorant Garamond";font-size:15px;color:var(--gold);letter-spacing:.1em}
+  .aud-card h3{font-family:"Noto Serif SC";font-size:18px;font-weight:700;margin:8px 0 8px}
+  .aud-card p{color:var(--ink-2);font-size:13px;line-height:1.65}
+
+  /* ===== Contact ===== */
+  .contact{background:linear-gradient(180deg,var(--bg-2) 0%,var(--bg) 100%)}
+  .contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center}
+  .contact h2{font-size:clamp(28px,4vw,46px);font-weight:700;line-height:1.3;margin:18px 0 22px}
+  .contact .lead{margin-bottom:30px}
+  .contact-list{display:flex;flex-direction:column;gap:20px}
+  .contact-item{display:flex;gap:16px;align-items:flex-start;padding:18px 20px;
+    border:1px solid var(--line-2);border-radius:14px;background:rgba(255,255,255,.02)}
+  .contact-item .ic{width:42px;height:42px;border-radius:11px;flex:none;
+    background:var(--gold-soft);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;color:var(--gold-2)}
+  .contact-item .lbl{font-size:12px;color:var(--ink-3);letter-spacing:.12em;margin-bottom:2px}
+  .contact-item .val{font-size:16px;color:var(--ink);font-weight:500}
+  .map-box{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line);
+    aspect-ratio:4/3.4;position:relative;background:var(--bg-3)}
+  .map-box iframe{width:100%;height:100%;border:0;filter:grayscale(.4) invert(.92) hue-rotate(180deg) brightness(.95) contrast(.92)}
+  /* Leaflet 高德地图暗色适配 */
+  #map{width:100%;height:100%;background:#101218}
+  .map-box .leaflet-tile-pane{filter:grayscale(.35) invert(.92) hue-rotate(180deg) brightness(.95) contrast(.9)}
+  .leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#161922;color:var(--ink);border:1px solid var(--line);box-shadow:0 12px 32px rgba(0,0,0,.5)}
+  .leaflet-popup-content{margin:14px 18px;font-size:13px;line-height:1.7}
+  .leaflet-popup-content b{color:var(--gold-2);font-size:14px}
+  .leaflet-container a.leaflet-popup-close-button{color:var(--ink-3)}
+  .map-attr{position:absolute;right:10px;bottom:6px;z-index:900;font-size:10px;color:#6b7280;letter-spacing:.04em;pointer-events:none}
+
+  /* ===== Footer ===== */
+  footer{background:#08090d;border-top:1px solid var(--line-2);padding:54px 0 30px}
+  .foot-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:40px;margin-bottom:40px}
+  .foot-grid p{color:var(--ink-3);font-size:13.5px;max-width:340px;margin-top:14px}
+  .foot-col h4{font-size:13px;letter-spacing:.14em;color:var(--ink-2);margin-bottom:16px;font-weight:500}
+  .foot-col a{display:block;color:var(--ink-3);font-size:14px;margin-bottom:10px;transition:color .25s}
+  .foot-col a:hover{color:var(--gold-2)}
+  .foot-bottom{border-top:1px solid var(--line-2);padding-top:24px;
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;color:var(--ink-3);font-size:12.5px}
+  .foot-bottom .links a{color:var(--ink-3);margin-left:18px}
+
+  /* ===== Reveal animation ===== */
+  .reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease}
+  .reveal.in{opacity:1;transform:none}
+  .d1{transition-delay:.08s}.d2{transition-delay:.16s}.d3{transition-delay:.24s}.d4{transition-delay:.32s}.d5{transition-delay:.4s}.d6{transition-delay:.48s}
+
+  /* ===== Responsive ===== */
+  @media(max-width:980px){
+    .menu{display:none}
+    .burger{display:flex}
+    .about-grid,.contact-grid{grid-template-columns:1fr;gap:40px}
+    .cap-grid,.biz-grid,.news-grid,.aud-grid,.case-grid,.foot-grid{grid-template-columns:1fr}
+    .case-grid .case-card.big{grid-row:auto}
+    .case-grid{grid-template-columns:1fr}
+    .news-card{grid-template-columns:1fr}
+    .news-card .ph{aspect-ratio:16/9}
+    .news-card .body{padding:22px}
+    .section{padding:78px 0}
+    .hero{padding-top:130px}
+    .foot-bottom{flex-direction:column}
+    .foot-bottom .links a{margin:0 14px 0 0}
+  }
+  @media(max-width:560px){
+    .wrap{padding:0 20px}
+    .biz-grid,.aud-grid{grid-template-columns:1fr}
+    .hero-cta{flex-direction:column;align-items:flex-start}
+    .btn{width:100%;justify-content:center}
+  }
+  .mobile-menu{position:fixed;inset:0;background:rgba(8,9,13,.97);z-index:60;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;
+    transform:translateY(-100%);transition:transform .45s ease;backdrop-filter:blur(10px)}
+  .mobile-menu.open{transform:none}
+  .mobile-menu a{font-size:22px;color:var(--ink)}
+  .mobile-menu .close{position:absolute;top:24px;right:24px;font-size:28px;background:none;border:0;color:var(--ink)}
+</style>
+</head>
+<body>
+
+<!-- ===== Header ===== -->
+<header id="header">
+  <div class="wrap nav">
+    <a href="#hero" class="brand">
+      <span class="logo">千</span>
+      <span class="name">千赞艺科<small>QIANZAN ART &amp; TECH</small></span>
+    </a>
+    <nav class="menu">
+      <a href="#about">关于千赞</a>
+      <a href="#capability">核心能力</a>
+      <a href="#business">业务领域</a>
+      <a href="#cases">项目实践</a>
+      <a href="#news">动态观点</a>
+      <a href="#audience">服务对象</a>
+    </nav>
+    <a href="#contact" class="btn solid">联系我们</a>
+    <button class="burger" id="burger" aria-label="菜单"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+  <button class="close" id="closeMenu">×</button>
+  <a href="#about">关于千赞</a>
+  <a href="#capability">核心能力</a>
+  <a href="#business">业务领域</a>
+  <a href="#cases">项目实践</a>
+  <a href="#news">动态观点</a>
+  <a href="#audience">服务对象</a>
+  <a href="#contact">联系我们</a>
+</div>
+
+<!-- ===== Hero ===== -->
+<section class="hero" id="hero">
+  <div class="hero-bg">
+    <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Cinematic%20wide%20shot%20of%20a%20futuristic%20cultural%20tourism%20pavilion%20at%20dusk%2C%20warm%20golden%20lights%2C%20traditional%20Chinese%20architecture%20meets%20modern%20design%2C%20mist%2C%20professional%20architectural%20photography%2C%20dark%20elegant%20mood&image_size=landscape_16_9" alt="千赞艺科 文旅空间" />
+  </div>
+  <div class="hero-grid"></div>
+  <div class="wrap hero-inner">
+    <div class="kicker reveal">AI 文旅创意解决专家</div>
+    <h1 class="reveal d1">千赞艺科<br><span class="gold">让文化，被看见</span></h1>
+    <div class="en-title en reveal d2">QIANZAN ART &amp; TECHNOLOGY</div>
+    <p class="lead reveal d3">千赞艺科——以 AI 輕量化运营策略、数据资产全链方案与 AIGC 创意设计为核心，为文旅项目提供从品牌、空间到运营的一体化解决方案。</p>
+    <div class="hero-cta reveal d4">
+      <a href="#business" class="btn solid">查看业务领域</a>
+      <a href="#cases" class="btn">标杆案例 →</a>
+    </div>
+    <div class="hero-tags reveal d5">
+      <span>AI 輕量化运营策略</span>
+      <span>数据资产全链解决方案</span>
+      <span>AIGC 创意设计</span>
+      <span>AI 应用技术培训</span>
+      <span>景观设计</span>
+      <span>文旅品牌策划</span>
+      <span>建筑设计</span>
+      <span>品牌化空间设计</span>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>SCROLL</span>
+    <span class="bar"></span>
+  </div>
+</section>
+
+<!-- ===== About ===== -->
+<section class="section about" id="about">
+  <div class="wrap about-grid">
+    <div class="about-img reveal">
+      <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Elegant%20interior%20of%20a%20cultural%20art%20space%2C%20warm%20wood%20and%20stone%20materials%2C%20soft%20lighting%2C%20modern%20minimalist%20design%20with%20traditional%20Chinese%20elements%2C%20professional%20photography&image_size=portrait_4_3" alt="千赞艺科 文化空间" />
+      <div class="frame"></div>
+      <div class="about-stat">
+        <div class="num">3+1</div>
+        <div class="lbl">能力一体闭环</div>
+      </div>
+    </div>
+    <div class="reveal d2">
+      <div class="eyebrow">关于千赞</div>
+      <div class="en-sub en">QIANZAN ART &amp; TECHNOLOGY CO., LTD</div>
+      <h2>以「艺」立心，以「科」立行<br>做有审美的 AI 文旅解决方案</h2>
+      <p>千赞艺科是一家以创意设计与智能科技双轮驱动的文旅服务商。我们坚信，每一处文化都值得被科学地看见——以 AI 輕量化运营策略、数据资产全链方案与 AIGC 创意设计为核心，为文旅项目提供从品牌、空间到运营的一体化解决方案。</p>
+      <div class="chips">
+        <span>AI 輕量化运营策略咨询</span>
+        <span>数据资产全链解决方案</span>
+        <span>AIGC 创意设计</span>
+        <span>AI 应用技术培训</span>
+        <span>景观设计</span>
+        <span>文旅品牌策划</span>
+        <span>建筑设计</span>
+        <span>品牌化空间设计</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Capability ===== -->
+<section class="section cap" id="capability">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <div class="eyebrow">CORE CAPABILITY</div>
+      <h2 class="h2">三大能力，一个<span class="accent">闭环</span></h2>
+      <p class="lead">品牌策划 · 空间设计 · 智能化运营——千赞艺科 AI 文旅解决专家，三大能力一体交付，不割裂、不甩包、全程对结果负责。</p>
+    </div>
+    <div class="cap-grid">
+      <div class="cap-card reveal d1">
+        <div class="cap-num">01</div>
+        <h3>品牌策划</h3>
+        <span class="en">BRAND PLANNING</span>
+        <p>提供文旅品牌定位、IP 孵化与传播策略，从文化基因提炼到品牌叙事构建，令项目在市场中更具独特辨识度。</p>
+      </div>
+      <div class="cap-card reveal d2">
+        <div class="cap-num">02</div>
+        <h3>空间设计</h3>
+        <span class="en">SPACE DESIGN</span>
+        <p>景观设计、建筑设计、品牌化空间设计三位一体，将文化叙事融入物理空间，打造可体验、可沉浸的文化场景。</p>
+      </div>
+      <div class="cap-card reveal d3">
+        <div class="cap-num">03</div>
+        <h3>智能化运营</h3>
+        <span class="en">INTELLIGENT OPERATION</span>
+        <p>涵盖 AI 輕量化运营策略咨询、数据资产全链解决方案与 AI 应用技术培训，以数据驱动决策，助力运营可持续增长。</p>
+      </div>
+    </div>
+    <div class="cap-loop reveal">
+      <div class="t">千赞闭环</div>
+      <div class="s">三大能力一体交付，不割裂、不甩包、全程对结果负责</div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Business ===== -->
+<section class="section" id="business">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <div class="eyebrow">WHAT WE DO</div>
+      <h2 class="h2">我们能做什么</h2>
+      <p class="lead">①AI 数字化服务：文旅 AI 运营咨询、数据资产方案、AIGC 创意设计、AI 实操培训；②文旅空间与品牌服务：景观、建筑、品牌化空间设计、文旅全案品牌策划。</p>
+    </div>
+    <div class="biz-grid">
+      <div class="biz-card reveal d1">
+        <div class="ph">
+          <span class="tag">核心业务</span>
+          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Abstract%20glowing%20data%20dashboard%20with%20flowing%20network%20lines%2C%20dark%20background%2C%20warm%20golden%20data%20visualization%2C%20AI%20technology%20concept%2C%20professional&image_size=landscape_4_3" alt="AI 輕量化运营策略咨询" />
+        </div>
+        <div class="body">
+          <h3>AI 輕量化运营策略咨询</h3>
+          <span class="en">AI Lightweight Operation Strategy</span>
+          <p>依托 AI 工具链提供低成本、高效率的运营方案，助力文旅项目快速搭建数据驱动的决策体系，降低试错成本。</p>
+        </div>
+      </div>
+      <div class="biz-card reveal d2">
+        <div class="ph">
+          <span class="tag">核心业务</span>
+          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Glowing%20data%20nodes%20connected%20in%20a%20chain%2C%20digital%20data%20stream%2C%20dark%20background%2C%20warm%20amber%20technological%20visualization%2C%20professional&image_size=landscape_4_3" alt="数据资产全链解决方案" />
+        </div>
+        <div class="body">
+          <h3>数据资产全链解决方案</h3>
+          <span class="en">Data Asset Full-chain Solution</span>
+          <p>从数据采集、治理到资产化变现的完整链路，让文旅项目的每一份数据都成为可复用的经营资产。</p>
+        </div>
+      </div>
+      <div class="biz-card reveal d3">
+        <div class="ph">
+          <span class="tag">核心业务</span>
+          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Abstract%20AI%20generated%20art%2C%20colorful%20creative%20digital%20painting%20flowing%2C%20warm%20tones%2C%20generative%20art%20concept%2C%20elegant%20professional&image_size=landscape_4_3" alt="AIGC 创意设计" />
+        </div>
+        <div class="body">
+          <h3>AIGC 创意设计</h3>
+          <span class="en">AIGC Creative Design</span>
+          <p>运用生成式 AI 技术进行视觉创意、内容生产与设计方案迭代，大幅提升创意产出效率与品质。</p>
+        </div>
+      </div>
+      <div class="biz-card reveal d1">
+        <div class="ph">
+          <span class="tag">赋能业务</span>
+          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Modern%20training%20workshop%20with%20people%20and%20laptops%2C%20warm%20lighting%2C%20professional%20learning%20environment%2C%20dark%20elegant%20mood&image_size=landscape_4_3" alt="AI 应用技术培训" />
+        </div>
+        <div class="body">
+          <h3>AI 应用技术培训</h3>
+          <span class="en">AI Application Training</span>
+          <p>面向文旅从业者与团队的 AI 工具实战培训，从 Prompt 工程到工作流自动化，助团队构建 AI 时代的实战能力。</p>
+        </div>
+      </div>
+      <div class="biz-card reveal d2">
+        <div class="ph">
+          <span class="tag">空间设计</span>
+          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Beautiful%20cultural%20tourism%20landscape%20design%2C%20park%20with%20traditional%20pavilion%2C%20water%20feature%2C%20warm%20sunset%20lighting%2C%20professional%20photography&image_size=landscape_4_3" alt="景观设计" />
+        </div>
+        <div class="body">
+          <h3>景观设计</h3>
+          <span class="en">Landscape Design</span>
+          <p>文旅景区与公共空间的景观规划与设计，融合在地文化与生态美学，打造有故事感的户外体验空间。</p>
+        </div>
+      </div>
+      <div class="biz-card reveal d3">
+        <div class="ph">
+          <span class="tag">品牌策划</span>
+          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Brand%20identity%20design%20mockup%20on%20dark%20table%2C%20elegant%20stationery%2C%20warm%20golden%20lighting%2C%20cultural%20branding%2C%20professional&image_size=landscape_4_3" alt="文旅品牌策划" />
+        </div>
+        <div class="body">
+          <h3>文旅品牌策划</h3>
+          <span class="en">Cultural Tourism Brand Planning</span>
+          <p>从市场洞察到品牌定位、视觉识别系统到传播规划，为文旅目的地与项目打造完整的品牌体系。</p>
+        </div>
+      </div>
+      <div class="biz-card reveal d1">
+        <div class="ph">
+          <span class="tag">空间设计</span>
+          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Modern%20cultural%20architecture%20building%2C%20warm%20stone%20facade%2C%20sunset%2C%20architectural%20photography%2C%20elegant%20professional&image_size=landscape_4_3" alt="建筑设计" />
+        </div>
+        <div class="body">
+          <h3>建筑设计</h3>
+          <span class="en">Architectural Design</span>
+          <p>文旅建筑与功能空间的建筑设计，兼顾文化表达、功能实用与建造可行性，让建筑成为文化的载体。</p>
+        </div>
+      </div>
+      <div class="biz-card reveal d2">
+        <div class="ph">
+          <span class="tag">空间设计</span>
+          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Branded%20retail%20interior%20space%2C%20warm%20wood%2C%20elegant%20lighting%2C%20cultural%20modern%20design%2C%20professional%20photography&image_size=landscape_4_3" alt="品牌化空间设计" />
+        </div>
+        <div class="body">
+          <h3>品牌化空间设计</h3>
+          <span class="en">Branded Space Design</span>
+          <p>根据品牌调性与文化内核进行空间的定制化设计，让每一处细节都传递品牌的独特气质与价值主张。</p>
+        </div>
+      </div>
+      <div class="biz-card reveal d3" style="display:flex;align-items:center;justify-content:center;border-style:dashed;background:transparent">
+        <div class="body" style="text-align:center">
+          <h3 style="color:var(--gold-2)">更多定制服务</h3>
+          <span class="en">CUSTOM ON DEMAND</span>
+          <p>无论项目大小，我们提供按需定制的复合方案，让能力匹配场景。</p>
+          <a href="#contact" class="btn" style="margin-top:14px">咨询定制 →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Cases ===== -->
+<section class="section cases" id="cases">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <div class="eyebrow">OUR PRACTICE</div>
+      <h2 class="h2">我们做过的策划与设计实践</h2>
+      <p class="lead">从农创小镇到公园绿地，千赞艺科以品牌策划与空间设计，交付一批可落地的策划与设计项目。</p>
+    </div>
+    <div class="case-grid">
+      <div class="case-card big reveal d1">
+        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Cultural%20community%20space%20interior%20with%20art%20exhibition%2C%20warm%20lighting%2C%20traditional%20Chinese%20cultural%20elements%2C%20elegant%20professional%20photography&image_size=portrait_4_3" alt="文化阵地" />
+        <div class="veil"></div>
+        <div class="body">
+          <div class="tag">策划 · 空间</div>
+          <h3>"瑞平交辉、乡恋杜山"文化阵地</h3>
+          <p>为文化阵地提升项目提供文化艺术项目的策划与规划设计，助力在地文化空间的内容构建与形象焕新。</p>
+        </div>
+      </div>
+      <div class="case-card reveal d2">
+        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Science%20and%20technology%20event%20stage%20with%20screens%2C%20warm%20stage%20lighting%2C%20modern%20event%20setup%2C%20professional%20photography&image_size=landscape_4_3" alt="科技工作者日" />
+        <div class="veil"></div>
+        <div class="body">
+          <div class="tag">AIGC · 视频</div>
+          <h3>530 全国科技工作者日</h3>
+          <p>为温州主场活动科学家风采展示环节提供 AI 视频制作服务，以影像语言呈现科技工作者风采。</p>
+        </div>
+      </div>
+      <div class="case-card reveal d3">
+        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Aerial%20view%20of%20urban%20lake%20park%20with%20greenery%2C%20walkways%2C%20pavilion%2C%20warm%20sunset%2C%20landscape%20photography%2C%20professional&image_size=landscape_4_3" alt="北堤湖公园" />
+        <div class="veil"></div>
+        <div class="body">
+          <div class="tag">景观 · 全案</div>
+          <h3>北堤湖公园</h3>
+          <p>整体策划与景观设计方案，融合在地文化元素与现代景观美学，打造城市休闲文旅新地标。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== News ===== -->
+<section class="section" id="news">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <div class="eyebrow">LATEST INSIGHTS</div>
+      <h2 class="h2">最新观点与动态</h2>
+      <p class="lead">千赞艺科官方公众号近期推文，点击阅读全文可查看原文。</p>
+    </div>
+    <div class="news-grid">
+      <a class="news-card reveal d1" href="#news">
+        <div class="ph">
+          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Business%20team%20in%20AI%20training%20session%2C%20modern%20conference%20room%2C%20warm%20lighting%2C%20professional%20photography&image_size=square" alt="数智赋能强企" />
+        </div>
+        <div class="body">
+          <div class="date">2026.08</div>
+          <h3>数智赋能强企，千赞艺科参训市级 AI 专项培训</h3>
+          <p style="color:var(--ink-2);font-size:14px">千赞艺科团队参与市级 AI 专项培训，聚焦数智赋能企业转型，探索 AI 在文旅与空间设计领域的落地应用。</p>
+          <span class="more">阅读全文</span>
+        </div>
+      </a>
+      <a class="news-card reveal d2" href="#news">
+        <div class="ph">
+          <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Creative%20cultural%20IP%20characters%20display%2C%20warm%20lighting%2C%20modern%20museum%20exhibit%2C%20professional%20photography&image_size=square" alt="AI 赋能文旅" />
+        </div>
+        <div class="body">
+          <div class="date">2026.07</div>
+          <h3>AI 赋能文旅：借势爆款 IP，复刻哪吒百亿流量密码</h3>
+          <p style="color:var(--ink-2);font-size:14px">从八仙 IP 到哪吒现象级爆火，文化 IP 如何借助 AI 赋能实现流量破圈？千赞艺科拆解文旅 IP 打造的底层逻辑。</p>
+          <span class="more">阅读全文</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Audience ===== -->
+<section class="section aud" id="audience">
+  <div class="wrap">
+    <div class="section-head center reveal">
+      <div class="eyebrow">WHO WE SERVE</div>
+      <h2 class="h2">我们服务的对象</h2>
+      <p class="lead">无论您是文保单位、景区、城市文旅操盘方还是小而美场景打造者，千赞艺科都能提供与之匹配的服务能力。</p>
+    </div>
+    <div class="aud-grid">
+      <div class="aud-card reveal d1">
+        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Historic%20preserved%20heritage%20building%2C%20warm%20light%2C%20cultural%20conservation%2C%20elegant%20professional%20photography&image_size=portrait_4_3" alt="文保单位" />
+        <div class="veil"></div>
+        <div class="body">
+          <div class="num">01</div>
+          <h3>文保单位</h3>
+          <p>关注文化保护与活化利用的平衡，需要兼具文化理解力与技术能力的服务商，让历史文脉在当代空间中焕发新生。</p>
+        </div>
+      </div>
+      <div class="aud-card reveal d2">
+        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Scenic%20tourist%20area%20with%20visitors%2C%20cultural%20landscape%2C%20warm%20daylight%2C%20professional%20photography&image_size=portrait_4_3" alt="景区运营方" />
+        <div class="veil"></div>
+        <div class="body">
+          <div class="num">02</div>
+          <h3>景区运营方</h3>
+          <p>关注景区品牌升级、空间改造与智慧运营，需要端到端交付能力，从品牌定位到空间落地再到数据驱动运营。</p>
+        </div>
+      </div>
+      <div class="aud-card reveal d3">
+        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=City%20cultural%20tourism%20district%20aerial%20view%2C%20warm%20evening%20lights%2C%20urban%20landscape%2C%20professional%20photography&image_size=portrait_4_3" alt="城市文旅操盘方" />
+        <div class="veil"></div>
+        <div class="body">
+          <div class="num">03</div>
+          <h3>城市文旅操盘方</h3>
+          <p>地方政府文旅部门、文旅集团等，关注城市文旅 IP 打造与区域文旅资源整合，需要全周期一体化服务伙伴。</p>
+        </div>
+      </div>
+      <div class="aud-card reveal d4">
+        <img src="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=Cozy%20boutique%20cultural%20shop%20interior%2C%20warm%20wood%2C%20small%20beautiful%20space%2C%20artisan%2C%20professional%20photography&image_size=portrait_4_3" alt="小而美场景打造" />
+        <div class="veil"></div>
+        <div class="body">
+          <div class="num">04</div>
+          <h3>小而美场景打造</h3>
+          <p>聚焦精品民宿、特色小店、社区文化空间等小型文旅场景，关注轻量落地，让小众在地文化实现商业可持续生长。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Contact ===== -->
+<section class="section contact" id="contact">
+  <div class="wrap contact-grid">
+    <div class="reveal">
+      <div class="eyebrow">CONTACT</div>
+      <h2>让我们聊聊<br>您的 <span class="accent">AI</span> 下一站</h2>
+      <p class="lead">无论您想把 AI 用在品牌、空间还是运营上，千赞艺科都能以「艺」的审美与「科」的方法，帮您把想法变成清晰可落地的下一步。</p>
+      <div class="contact-list">
+        <div class="contact-item">
+          <div class="ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          </div>
+          <div>
+            <div class="lbl">联系电话</div>
+            <div class="val">176-2121-8581</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          </div>
+          <div>
+            <div class="lbl">公司地址</div>
+            <div class="val">河南省郑州市高新技术开发区<br>保利文化广场1号楼2单元307-01</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="ic">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 0 1 .213.565l-.39 1.48c-.019.07-.048.141-.048.213 0 .32.26.58.58.58a.544.544 0 0 0 .283-.078l1.883-1.092a.845.845 0 0 1 .71-.057 10.16 10.16 0 0 0 2.458.376c.09 0 .178-.005.266-.006a5.62 5.62 0 0 1-.122-1.148c0-3.44 3.226-6.23 7.206-6.23.207 0 .41.011.612.027-.5-3.387-3.86-5.994-7.962-5.994zM5.785 5.991c.621 0 1.125.5 1.125 1.118s-.504 1.118-1.125 1.118-1.125-.5-1.125-1.118.504-1.118 1.125-1.118zm5.812 0c.621 0 1.125.5 1.125 1.118s-.504 1.118-1.125 1.118-1.125-.5-1.125-1.118.504-1.118 1.125-1.118zM24 15.348c0-3.388-3.226-6.136-7.204-6.136-3.978 0-7.204 2.748-7.204 6.136 0 3.388 3.226 6.136 7.204 6.136.832 0 1.632-.126 2.376-.348a.68.68 0 0 1 .573.046l1.504.872a.435.435 0 0 0 .226.062c.256 0 .464-.204.464-.464 0-.057-.023-.114-.038-.17l-.312-1.184a.473.473 0 0 1 .17-.451C22.926 18.857 24 17.21 24 15.348zm-9.6-1.29c-.496 0-.9-.398-.9-.892 0-.494.404-.892.9-.892s.9.398.9.892c0 .494-.404.892-.9.892zm4.792 0c-.496 0-.9-.398-.9-.892 0-.494.404-.892.9-.892s.9.398.9.892c0 .494-.404.892-.9.892z"/></svg>
+          </div>
+          <div>
+            <div class="lbl">商务合作</div>
+            <div class="val">wx：176-2121-8581</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="map-box reveal d2">
+      <div id="map"></div>
+      <span class="map-attr">© 高德地图</span>
+    </div>
+  </div>
+</section>
+
+<!-- ===== Footer ===== -->
+<footer>
+  <div class="wrap">
+    <div class="foot-grid">
+      <div>
+        <div class="brand" style="margin-bottom:6px">
+          <span class="logo">千</span>
+          <span class="name">千赞艺科<small>QIANZAN ART &amp; TECH</small></span>
+        </div>
+        <p>AI 文旅创意解决专家——以品牌策划、空间设计与智能化运营的一体化闭环，为文旅项目交付可落地的解决方案。</p>
+      </div>
+      <div class="foot-col">
+        <h4>业务领域</h4>
+        <a href="#business">AI 輕量化运营策略</a>
+        <a href="#business">数据资产全链方案</a>
+        <a href="#business">AIGC 创意设计</a>
+        <a href="#business">景观 / 建筑 / 空间</a>
+      </div>
+      <div class="foot-col">
+        <h4>导航</h4>
+        <a href="#about">关于千赞</a>
+        <a href="#cases">项目实践</a>
+        <a href="#news">动态观点</a>
+        <a href="#contact">联系我们</a>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© 2026 千赞艺科 QIANZAN ART &amp; TECHNOLOGY. All rights reserved.</span>
+      <span class="links">
+        <a href="#hero">回到顶部</a>
+      </span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Header scroll state
+  const header = document.getElementById('header');
+  const onScroll = () => {
+    if(window.scrollY > 40) header.classList.add('on');
+    else header.classList.remove('on');
+  };
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  // Mobile menu
+  const burger = document.getElementById('burger');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const closeMenu = document.getElementById('closeMenu');
+  const openMenu = () => mobileMenu.classList.add('open');
+  const shutMenu = () => mobileMenu.classList.remove('open');
+  burger.addEventListener('click', openMenu);
+  closeMenu.addEventListener('click', shutMenu);
+  mobileMenu.querySelectorAll('a').forEach(a => a.addEventListener('click', shutMenu));
+
+  // Reveal on scroll
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if(e.isIntersecting){
+        e.target.classList.add('in');
+        io.unobserve(e.target);
+      }
+    });
+  }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // 高德地图（Leaflet + 高德瓦片，免 Key）
+  if(typeof L === 'undefined'){
+    document.write('<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"><\/script>');
+  }
+</script>
+<script>
+  window.addEventListener('load', function(){
+    if(typeof L === 'undefined') return;
+    var zz = [34.811625, 113.558775]; // 保利文化广场（科学大道与银屏路交会处）
+    var map = L.map('map', {attributionControl:false, scrollWheelZoom:false}).setView(zz, 16);
+    L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+      subdomains:['1','2','3','4'], maxZoom:18
+    }).addTo(map);
+    L.circleMarker(zz, {
+      radius:9, color:'#d4af5f', weight:2, fillColor:'#d4af5f', fillOpacity:.85
+    }).addTo(map).bindPopup(
+      '<b>千赞艺科 QIANZAN</b><br>河南省郑州市高新技术开发区<br>保利文化广场1号楼2单元307-01'
+    ).openPopup();
+  });
+</script>
+</body>
+</html>
